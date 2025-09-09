@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { PrismaClient } from '@prisma/client';
 
+
 @Injectable()
 export class OrdersService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger('OrdersService');
