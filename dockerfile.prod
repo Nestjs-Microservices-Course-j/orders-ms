@@ -1,0 +1,61 @@
+# DEPENDENCIAS
+FROM node:21-alpine3.19 as deps
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install
+
+# BUILDER - Contrulle la aplicacin
+
+FROM node:21-alpine3.19 as build
+
+# pasar la variable de entorno para la conexion a la base de datos
+ARG ORDERS_DB_URL
+ENV DATABASE_URL=$ORDERS_DB_URL
+
+WORKDIR /usr/src/app
+
+#copiar de deps los modulos de node
+COPY --from=deps /usr/src/app/node_modules ./node_modules
+
+# copias todo el codigo fuente de la app
+COPY . .
+
+# generar las migraciones y el cliente de prisma
+# para que funcione es necesario pasar la variable de entorno ORDERS_DB_URL 
+# y que la base de datos este corriendo
+RUN npx prisma migrate deploy
+RUN npx prisma generate
+
+# RUN npm run test -> aqui se puede ejecutar las pruebas, si fallan se detiene la construccion
+RUN npm run build
+
+
+# Instalando solo las dependencias de producción
+RUN npm ci -f --only=production && npm cache clean --force
+
+
+
+# crear la imagen final de
+
+FROM node:21-alpine3.19 as prod
+
+WORKDIR /usr/src/app
+
+COPY --from=build /usr/src/app/node_modules ./node_modules
+
+# copiar la carpeta de distribución
+COPY --from=build /usr/src/app/dist ./dist
+
+ENV NODE_ENV=production
+
+# cambiar de usuario root a node para evitar que tenga todos los privilegios
+# y pueda borrar información o codigo
+USER node
+
+EXPOSE 3000
+
+CMD [ "node", "dist/main.js" ]
+
