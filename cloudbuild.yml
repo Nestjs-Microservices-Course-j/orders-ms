@@ -14,10 +14,11 @@ steps:
       'northamerica-south1-docker.pkg.dev/tienda-microservices-473215/image-registry/orders-ms',
     ]
 
+availableSecrets:
+  secretManager:
+  - versionName: projects/826386195411/secrets/orders_db_url/versions/1
+    env: 'DATABASE_URL'
+
 options:
   logging: CLOUD_LOGGING_ONLY
 
-availableSecrets:
-  secretManager:
-  - versionName: projects/826386195411/secrets/orders_db_url
-    env: 'DATABASE_URL'
