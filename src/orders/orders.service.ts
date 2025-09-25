@@ -182,10 +182,7 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
   }
 
   async paidOrder( paidOrderDto: PaidOrderDto ) {
-
-    this.logger.log('Order Paid');
-    this.logger.log(paidOrderDto);
-
+    
     const order = await this.order.update({
       where: { id: paidOrderDto.orderId },
       data: {
